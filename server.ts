@@ -1250,6 +1250,9 @@ app.use("/src/assets", express.static(path.join(process.cwd(), "src/assets")));
 // --------------------------------------------------------------------------------
 
 async function serveViteAssets() {
+  // Initialize and load database (e.g. from PostgreSQL/Supabase if configured)
+  await dbStore.initialize();
+
   if (process.env.NODE_ENV !== "production") {
     console.log("Loading Vite Dev Mode server middleware...");
     const vite = await createViteServer({

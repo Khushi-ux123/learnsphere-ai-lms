@@ -5,7 +5,9 @@
 
 import fs from "fs";
 import path from "path";
+import { Client } from "pg";
 import { User, Course, Enrollment, Certificate, Notification } from "../src/types";
+import { postgresSchemaSQL } from "../src/db/schema";
 
 const DB_FILE = path.join(process.cwd(), "db.json");
 
@@ -170,7 +172,7 @@ const SEED_COURSES: Course[] = [
     rating: 4.9,
     reviews: [],
     isPublished: true,
-    thumbnail: "/src/assets/images/apple_ui_design_1781741607210.jpg",
+    thumbnail: "https://images.unsplash.com/photo-1550751827-4bd374c3f58b?q=80&w=800&auto=format&fit=crop",
     duration: "10h 15m",
     studentCount: 325,
     modules: [
@@ -327,6 +329,8 @@ const SEED_NOTIFICATIONS: Notification[] = [
 
 class DatabaseStore {
   private data: DbSchema;
+  private pgClient: Client | null = null;
+  public isPostgres = false;
 
   constructor() {
     this.data = {
@@ -337,6 +341,8 @@ class DatabaseStore {
       certificates: [],
       notifications: [],
     };
+    // Initial sync-load of fallback local JSON.
+    // If PostgreSQL connects, this.initialize() will swap it.
     this.load();
   }
 
@@ -345,10 +351,8 @@ class DatabaseStore {
       if (fs.existsSync(DB_FILE)) {
         const fileContent = fs.readFileSync(DB_FILE, "utf-8");
         this.data = JSON.parse(fileContent);
-        // Ensure default logins exist in loaded passwords
         this.data.passwords = { ...DEFAULT_PASSWORDS, ...this.data.passwords };
       } else {
-        // Run seed
         this.data = {
           users: SEED_USERS,
           passwords: DEFAULT_PASSWORDS,
@@ -380,6 +384,309 @@ class DatabaseStore {
     }
   }
 
+  public async initialize() {
+    let dbUrl = process.env.DATABASE_URL || "";
+    if (!dbUrl) {
+      console.log("No DATABASE_URL found. Using local JSON store.");
+      return;
+    }
+
+    // Clean up square bracket formatting in passwords if present from copy-paste
+    if (dbUrl.includes(":[") && dbUrl.includes("]@")) {
+      dbUrl = dbUrl.replace(":[", ":").replace("]@", "@");
+    }
+
+    try {
+      console.log("Connecting to PostgreSQL/Supabase database...");
+      this.pgClient = new Client({
+        connectionString: dbUrl,
+        ssl: dbUrl.includes("supabase") || dbUrl.includes("elephantsql") || dbUrl.includes("localhost") === false
+          ? { rejectUnauthorized: false }
+          : false,
+      });
+
+      await this.pgClient.connect();
+      console.log("Successfully connected to PostgreSQL/Supabase!");
+      this.isPostgres = true;
+
+      // Check if users table exists
+      const checkTableQuery = `
+        SELECT EXISTS (
+          SELECT FROM information_schema.tables 
+          WHERE table_name = 'users'
+        );
+      `;
+      const checkRes = await this.pgClient.query(checkTableQuery);
+      const tablesExist = checkRes.rows[0]?.exists;
+
+      if (!tablesExist) {
+        console.log("Tables do not exist. Creating schema & executing scripts...");
+        await this.pgClient.query(postgresSchemaSQL);
+        console.log("Schema tables created successfully!");
+
+        console.log("Seeding PostgreSQL tables with default LearnSphere records...");
+        await this.seedPostgres();
+        console.log("Database seeded successfully!");
+      }
+
+      await this.loadFromPostgres();
+      console.log("Loaded local cache from PostgreSQL successfully!");
+
+    } catch (err) {
+      console.error("Failed to initialize PostgreSQL. Falling back to local JSON file store.", err);
+      this.isPostgres = false;
+      this.load();
+    }
+  }
+
+  private async seedPostgres() {
+    if (!this.pgClient) return;
+
+    // Seed Users
+    for (const u of SEED_USERS) {
+      await this.pgClient.query(
+        `INSERT INTO users (id, name, email, password_hash, role, avatar_url, xp, streak, badges, created_at)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+         ON CONFLICT (id) DO NOTHING`,
+        [u.id, u.name, u.email, DEFAULT_PASSWORDS[u.email] || 'password123', u.role, u.avatarUrl, u.xp, u.streak, u.badges, u.joinedAt ? new Date(u.joinedAt) : new Date()]
+      );
+    }
+
+    // Seed Courses
+    for (const c of SEED_COURSES) {
+      await this.pgClient.query(
+        `INSERT INTO courses (id, title, description, long_description, category, instructor_id, difficulty, price, rating, thumbnail_url, duration, student_count, is_published)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
+         ON CONFLICT (id) DO NOTHING`,
+        [c.id, c.title, c.description, c.longDescription || "", c.category, c.instructorId, c.difficulty, c.price, c.rating, c.thumbnail || "", c.duration, c.studentCount, c.isPublished]
+      );
+
+      let mIdx = 0;
+      for (const m of c.modules) {
+        await this.pgClient.query(
+          `INSERT INTO modules (id, course_id, title, sort_order)
+           VALUES ($1, $2, $3, $4)
+           ON CONFLICT (id) DO NOTHING`,
+          [m.id, c.id, m.title, mIdx++]
+        );
+
+        let lIdx = 0;
+        for (const l of m.lessons) {
+          await this.pgClient.query(
+            `INSERT INTO lessons (id, module_id, title, type, duration, video_url, pdf_url, content, assignment_text, quiz_questions, sort_order)
+             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
+             ON CONFLICT (id) DO NOTHING`,
+            [
+              l.id, m.id, l.title, l.type, l.duration,
+              l.videoUrl || null, l.pdfUrl || null, l.content || null, l.assignmentText || null,
+              l.quizQuestions ? JSON.stringify(l.quizQuestions) : null, lIdx++
+            ]
+          );
+        }
+      }
+
+      // Reviews
+      for (const r of c.reviews) {
+        await this.pgClient.query(
+          `INSERT INTO reviews (id, course_id, user_id, rating, comment, created_at)
+           VALUES ($1, $2, $3, $4, $5, $6)
+           ON CONFLICT (id) DO NOTHING`,
+          [r.id, c.id, r.userId, r.rating, r.comment, r.date ? new Date(r.date) : new Date()]
+        );
+      }
+    }
+
+    // Seed Enrollments
+    for (const e of SEED_ENROLLMENTS) {
+      await this.pgClient.query(
+        `INSERT INTO enrollments (id, user_id, course_id, progress, completed_lessons, notes, bookmarked_lessons, quiz_scores, submitted_assignments, enrolled_at)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+         ON CONFLICT (id) DO NOTHING`,
+        [
+          e.id, e.userId, e.courseId, e.progress, e.completedLessons,
+          JSON.stringify(e.notes), e.bookmarkedLessons, JSON.stringify(e.quizScores),
+          JSON.stringify(e.submittedAssignments), e.enrolledAt ? new Date(e.enrolledAt) : new Date()
+        ]
+      );
+    }
+
+    // Seed Notifications
+    for (const n of SEED_NOTIFICATIONS) {
+      await this.pgClient.query(
+        `INSERT INTO notifications (id, user_id, title, message, type, read, created_at)
+         VALUES ($1, $2, $3, $4, $5, $6, $7)
+         ON CONFLICT (id) DO NOTHING`,
+        [n.id, n.userId, n.title, n.message, n.type, n.read, n.date ? new Date(n.date) : new Date()]
+      );
+    }
+  }
+
+  private async loadFromPostgres() {
+    if (!this.pgClient) return;
+
+    const usersRes = await this.pgClient.query(`SELECT * FROM users`);
+    const coursesRes = await this.pgClient.query(`SELECT * FROM courses`);
+    const modulesRes = await this.pgClient.query(`SELECT * FROM modules ORDER BY sort_order ASC`);
+    const lessonsRes = await this.pgClient.query(`SELECT * FROM lessons ORDER BY sort_order ASC`);
+    const reviewsRes = await this.pgClient.query(`SELECT * FROM reviews ORDER BY created_at DESC`);
+    const enrollmentsRes = await this.pgClient.query(`SELECT * FROM enrollments`);
+    const certificatesRes = await this.pgClient.query(`SELECT * FROM certificates`);
+    const notificationsRes = await this.pgClient.query(`SELECT * FROM notifications ORDER BY created_at DESC`);
+
+    // Parse Users
+    const users: User[] = usersRes.rows.map(u => ({
+      id: u.id,
+      name: u.name,
+      email: u.email,
+      role: u.role,
+      avatarUrl: u.avatar_url || "",
+      xp: u.xp,
+      streak: u.streak,
+      badges: u.badges || [],
+      joinedAt: u.created_at ? new Date(u.created_at).toISOString() : new Date().toISOString()
+    }));
+
+    const passwords: { [email: string]: string } = {};
+    usersRes.rows.forEach(u => {
+      if (u.password_hash) {
+        passwords[u.email.toLowerCase()] = u.password_hash;
+      }
+    });
+
+    // Parse Reviews
+    const reviewsByCourse: { [courseId: string]: any[] } = {};
+    reviewsRes.rows.forEach(r => {
+      const user = users.find(u => u.id === r.user_id);
+      const reviewObj = {
+        id: r.id,
+        userId: r.user_id,
+        userName: user ? user.name : "Student",
+        rating: r.rating,
+        comment: r.comment,
+        date: r.created_at ? new Date(r.created_at).toISOString().split('T')[0] : new Date().toISOString().split('T')[0]
+      };
+      if (!reviewsByCourse[r.course_id]) {
+        reviewsByCourse[r.course_id] = [];
+      }
+      reviewsByCourse[r.course_id].push(reviewObj);
+    });
+
+    // Parse Lessons
+    const lessonsByModule: { [moduleId: string]: any[] } = {};
+    lessonsRes.rows.forEach(l => {
+      const lessonObj = {
+        id: l.id,
+        title: l.title,
+        type: l.type,
+        duration: l.duration,
+        videoUrl: l.video_url || undefined,
+        pdfUrl: l.pdf_url || undefined,
+        content: l.content || undefined,
+        assignmentText: l.assignment_text || undefined,
+        quizQuestions: typeof l.quiz_questions === 'string' ? JSON.parse(l.quiz_questions) : l.quiz_questions || undefined
+      };
+      if (!lessonsByModule[l.module_id]) {
+        lessonsByModule[l.module_id] = [];
+      }
+      lessonsByModule[l.module_id].push(lessonObj);
+    });
+
+    // Parse Modules
+    const modulesByCourse: { [courseId: string]: any[] } = {};
+    modulesRes.rows.forEach(m => {
+      const moduleObj = {
+        id: m.id,
+        title: m.title,
+        lessons: lessonsByModule[m.id] || []
+      };
+      if (!modulesByCourse[m.course_id]) {
+        modulesByCourse[m.course_id] = [];
+      }
+      modulesByCourse[m.course_id].push(moduleObj);
+    });
+
+    // Parse Courses
+    const courses: Course[] = coursesRes.rows.map(c => {
+      const instructor = users.find(u => u.id === c.instructor_id);
+      return {
+        id: c.id,
+        title: c.title,
+        description: c.description,
+        longDescription: c.long_description || "",
+        category: c.category,
+        instructorId: c.instructor_id,
+        instructorName: instructor ? instructor.name : "Instructor",
+        instructorTitle: "Principal Engineer & Educator",
+        instructorAvatar: instructor ? instructor.avatarUrl : "",
+        difficulty: c.difficulty as any,
+        price: typeof c.price === 'string' ? parseFloat(c.price) : c.price,
+        rating: typeof c.rating === 'string' ? parseFloat(c.rating) : c.rating,
+        reviews: reviewsByCourse[c.id] || [],
+        isPublished: c.is_published,
+        thumbnail: c.thumbnail_url || "",
+        duration: c.duration,
+        studentCount: c.student_count,
+        modules: modulesByCourse[c.id] || []
+      };
+    });
+
+    // Parse Enrollments
+    const enrollments: Enrollment[] = enrollmentsRes.rows.map(e => ({
+      id: e.id,
+      userId: e.user_id,
+      courseId: e.course_id,
+      progress: e.progress,
+      completedLessons: e.completed_lessons || [],
+      notes: typeof e.notes === 'string' ? JSON.parse(e.notes) : e.notes || {},
+      bookmarkedLessons: e.bookmarked_lessons || [],
+      quizScores: typeof e.quiz_scores === 'string' ? JSON.parse(e.quiz_scores) : e.quiz_scores || {},
+      submittedAssignments: typeof e.submitted_assignments === 'string' ? JSON.parse(e.submitted_assignments) : e.submitted_assignments || {},
+      enrolledAt: e.enrolled_at ? new Date(e.enrolled_at).toISOString() : new Date().toISOString()
+    }));
+
+    // Parse Certificates
+    const certificates: Certificate[] = certificatesRes.rows.map(c => {
+      const user = users.find(u => u.id === c.user_id);
+      const course = courses.find(co => co.id === c.course_id);
+      return {
+        id: c.id,
+        userId: c.user_id,
+        courseId: c.course_id,
+        uuid: c.uuid,
+        userName: user ? user.name : "Student",
+        courseTitle: course ? course.title : "Course Specialization",
+        instructorName: course ? course.instructorName : "Angela Cooper",
+        issueDate: c.issue_date ? new Date(c.issue_date).toISOString() : new Date().toISOString()
+      };
+    });
+
+    // Parse Notifications
+    const notifications: Notification[] = notificationsRes.rows.map(n => ({
+      id: n.id,
+      userId: n.user_id,
+      title: n.title,
+      message: n.message,
+      type: n.type as any,
+      read: n.read,
+      date: n.created_at ? new Date(n.created_at).toISOString() : new Date().toISOString()
+    }));
+
+    this.data = {
+      users,
+      passwords,
+      courses,
+      enrollments,
+      certificates,
+      notifications
+    };
+  }
+
+  private async runQuery(sql: string, params: any[] = []) {
+    if (this.isPostgres && this.pgClient) {
+      return this.pgClient.query(sql, params);
+    }
+  }
+
   public getUsers(): User[] {
     return this.data.users;
   }
@@ -400,12 +707,47 @@ class DatabaseStore {
       this.data.users.push(user);
     }
     this.save();
+
+    // PG WRITE-THROUGH
+    if (this.isPostgres) {
+      this.runQuery(
+        `INSERT INTO users (id, name, email, role, avatar_url, xp, streak, badges)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+         ON CONFLICT (id) DO UPDATE SET
+           name = EXCLUDED.name,
+           email = EXCLUDED.email,
+           role = EXCLUDED.role,
+           avatar_url = EXCLUDED.avatar_url,
+           xp = EXCLUDED.xp,
+           streak = EXCLUDED.streak,
+           badges = EXCLUDED.badges`,
+        [user.id, user.name, user.email, user.role, user.avatarUrl, user.xp, user.streak, user.badges]
+      ).catch(err => console.error("Postgres async write-through saveUser failed:", err));
+    }
   }
 
   public registerUser(user: User, passwordRaw: string) {
     this.saveUser(user);
     this.data.passwords[user.email.toLowerCase()] = passwordRaw;
     this.save();
+
+    // PG WRITE-THROUGH
+    if (this.isPostgres) {
+      this.runQuery(
+        `INSERT INTO users (id, name, email, password_hash, role, avatar_url, xp, streak, badges)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+         ON CONFLICT (id) DO UPDATE SET
+           name = EXCLUDED.name,
+           email = EXCLUDED.email,
+           password_hash = EXCLUDED.password_hash,
+           role = EXCLUDED.role,
+           avatar_url = EXCLUDED.avatar_url,
+           xp = EXCLUDED.xp,
+           streak = EXCLUDED.streak,
+           badges = EXCLUDED.badges`,
+         [user.id, user.name, user.email, passwordRaw, user.role, user.avatarUrl, user.xp, user.streak, user.badges]
+      ).catch(err => console.error("Postgres registerUser failed:", err));
+    }
   }
 
   public checkPassword(email: string, passwordRaw: string): boolean {
@@ -429,6 +771,67 @@ class DatabaseStore {
       this.data.courses.push(course);
     }
     this.save();
+
+    // PG WRITE-THROUGH
+    if (this.isPostgres) {
+      this.runQuery(
+        `INSERT INTO courses (id, title, description, long_description, category, instructor_id, difficulty, price, rating, thumbnail_url, duration, student_count, is_published)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
+         ON CONFLICT (id) DO UPDATE SET
+           title = EXCLUDED.title,
+           description = EXCLUDED.description,
+           long_description = EXCLUDED.long_description,
+           category = EXCLUDED.category,
+           instructor_id = EXCLUDED.instructor_id,
+           difficulty = EXCLUDED.difficulty,
+           price = EXCLUDED.price,
+           rating = EXCLUDED.rating,
+           thumbnail_url = EXCLUDED.thumbnail_url,
+           duration = EXCLUDED.duration,
+           student_count = EXCLUDED.student_count,
+           is_published = EXCLUDED.is_published`,
+        [
+          course.id, course.title, course.description, course.longDescription || "", course.category,
+          course.instructorId, course.difficulty, course.price, course.rating, course.thumbnail || "",
+          course.duration, course.studentCount, course.isPublished
+        ]
+      ).then(async () => {
+        let mIdx = 0;
+        for (const m of course.modules) {
+          await this.runQuery(
+            `INSERT INTO modules (id, course_id, title, sort_order)
+             VALUES ($1, $2, $3, $4)
+             ON CONFLICT (id) DO UPDATE SET
+               title = EXCLUDED.title,
+               sort_order = EXCLUDED.sort_order`,
+            [m.id, course.id, m.title, mIdx++]
+          );
+
+          let lIdx = 0;
+          for (const l of m.lessons) {
+            await this.runQuery(
+              `INSERT INTO lessons (id, module_id, title, type, duration, video_url, pdf_url, content, assignment_text, quiz_questions, sort_order)
+               VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
+               ON CONFLICT (id) DO UPDATE SET
+                 title = EXCLUDED.title,
+                 type = EXCLUDED.type,
+                 duration = EXCLUDED.duration,
+                 video_url = EXCLUDED.video_url,
+                 pdf_url = EXCLUDED.pdf_url,
+                 content = EXCLUDED.content,
+                 assignment_text = EXCLUDED.assignment_text,
+                 quiz_questions = EXCLUDED.quiz_questions,
+                 sort_order = EXCLUDED.sort_order`,
+              [
+                l.id, m.id, l.title, l.type, l.duration,
+                l.videoUrl || null, l.pdfUrl || null, l.content || null, l.assignmentText || null,
+                l.quizQuestions ? JSON.stringify(l.quizQuestions) : null, lIdx++
+              ]
+            );
+          }
+        }
+      }).catch(err => console.error("Postgres saveCourse failed:", err));
+    }
   }
 
   public getEnrollments(): Enrollment[] {
@@ -451,6 +854,26 @@ class DatabaseStore {
       this.data.enrollments.push(enrollment);
     }
     this.save();
+
+    // PG WRITE-THROUGH
+    if (this.isPostgres) {
+      this.runQuery(
+        `INSERT INTO enrollments (id, user_id, course_id, progress, completed_lessons, notes, bookmarked_lessons, quiz_scores, submitted_assignments)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+         ON CONFLICT (id) DO UPDATE SET
+           progress = EXCLUDED.progress,
+           completed_lessons = EXCLUDED.completed_lessons,
+           notes = EXCLUDED.notes,
+           bookmarked_lessons = EXCLUDED.bookmarked_lessons,
+           quiz_scores = EXCLUDED.quiz_scores,
+           submitted_assignments = EXCLUDED.submitted_assignments`,
+        [
+          enrollment.id, enrollment.userId, enrollment.courseId, enrollment.progress,
+          enrollment.completedLessons, JSON.stringify(enrollment.notes), enrollment.bookmarkedLessons,
+          JSON.stringify(enrollment.quizScores), JSON.stringify(enrollment.submittedAssignments)
+        ]
+      ).catch(err => console.error("Postgres saveEnrollment failed:", err));
+    }
   }
 
   public getCertificates(): Certificate[] {
@@ -473,6 +896,19 @@ class DatabaseStore {
       this.data.certificates.push(cert);
     }
     this.save();
+
+    // PG WRITE-THROUGH
+    if (this.isPostgres) {
+      this.runQuery(
+        `INSERT INTO certificates (id, user_id, course_id, uuid)
+         VALUES ($1, $2, $3, $4)
+         ON CONFLICT (id) DO UPDATE SET
+           user_id = EXCLUDED.user_id,
+           course_id = EXCLUDED.course_id,
+           uuid = EXCLUDED.uuid`,
+        [cert.id, cert.userId, cert.courseId, cert.uuid]
+      ).catch(err => console.error("Postgres saveCertificate failed:", err));
+    }
   }
 
   public getNotifications(): Notification[] {
@@ -486,6 +922,20 @@ class DatabaseStore {
   public saveNotification(notif: Notification) {
     this.data.notifications.push(notif);
     this.save();
+
+    // PG WRITE-THROUGH
+    if (this.isPostgres) {
+      this.runQuery(
+        `INSERT INTO notifications (id, user_id, title, message, type, read, created_at)
+         VALUES ($1, $2, $3, $4, $5, $6, $7)
+         ON CONFLICT (id) DO UPDATE SET
+           title = EXCLUDED.title,
+           message = EXCLUDED.message,
+           type = EXCLUDED.type,
+           read = EXCLUDED.read`,
+         [notif.id, notif.userId, notif.title, notif.message, notif.type, notif.read, notif.date ? new Date(notif.date) : new Date()]
+      ).catch(err => console.error("Postgres saveNotification failed:", err));
+    }
   }
 
   public markNotificationAsRead(notifId: string) {
@@ -493,6 +943,14 @@ class DatabaseStore {
     if (idx >= 0) {
       this.data.notifications[idx].read = true;
       this.save();
+    }
+
+    // PG WRITE-THROUGH
+    if (this.isPostgres) {
+      this.runQuery(
+        `UPDATE notifications SET read = true WHERE id = $1`,
+        [notifId]
+      ).catch(err => console.error("Postgres markNotificationAsRead failed:", err));
     }
   }
 }
