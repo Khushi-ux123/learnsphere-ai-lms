@@ -137,8 +137,8 @@ export default function AuthScreen({ onBack, onLoginSuccess, initialRole, theme,
 
       {/* Interactive Title Block */}
       <div className="w-full max-w-lg text-center mb-6 mt-16 md:mt-0 relative z-20">
-        <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary-100/60 dark:bg-primary-950/30 border border-primary-200/30 dark:border-primary-900/20 text-xs font-bold text-primary-600 dark:text-primary-400 mb-3 tracking-wide font-mono uppercase">
-          <Sparkles className="w-3.5 h-3.5 text-indigo-500 animate-pulse" />
+        <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary-100/60 dark:bg-amber-950/40 border border-primary-200/30 dark:border-amber-900/30 text-xs font-bold text-primary-600 dark:text-amber-400 mb-3 tracking-wide font-mono uppercase shadow-sm">
+          <Sparkles className="w-3.5 h-3.5 text-indigo-500 dark:text-amber-400 animate-pulse" />
           3D Cognitive Shield Enabled
         </div>
 
@@ -166,11 +166,11 @@ export default function AuthScreen({ onBack, onLoginSuccess, initialRole, theme,
           onMouseMove={handleMouseMove}
           onMouseLeave={handleMouseLeave}
           style={{
-            transform: `perspective(1500px) rotateY(${isLogin ? 0 : 180}deg) rotateX(${tilt.rotateX}deg) rotateY(${tilt.rotateY + (isLogin ? 0 : 180)}deg) translateZ(10px)`,
+            transform: `perspective(1500px) rotateY(${isLogin ? 0 : 180}deg) rotateX(${tilt.rotateX}deg) rotateY(${tilt.rotateY}deg) translateZ(10px)`,
             transformStyle: "preserve-3d",
             transition: "transform 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275)",
           }}
-          className="w-full min-h-[480px] relative preserve-3d"
+          className="w-full min-h-[590px] relative preserve-3d"
         >
 
           {/* ==================== CARD SIDE A: LOGIN ==================== */}
@@ -179,7 +179,9 @@ export default function AuthScreen({ onBack, onLoginSuccess, initialRole, theme,
               backfaceVisibility: "hidden",
               WebkitBackfaceVisibility: "hidden"
             }}
-            className="w-full h-full bg-white/90 dark:bg-slate-900/90 backdrop-blur-xl border border-slate-200/85 dark:border-slate-800 rounded-[32px] shadow-2xl p-6 sm:p-8 flex flex-col justify-between absolute top-0 left-0 right-0 preserve-3d"
+            className={`w-full h-full bg-white/90 dark:bg-slate-900/90 backdrop-blur-xl border border-slate-200/85 dark:border-slate-800 rounded-[32px] shadow-2xl p-6 sm:p-8 flex flex-col justify-between absolute top-0 left-0 right-0 preserve-3d transition-all duration-300 ${
+              isLogin ? "z-20 pointer-events-auto opacity-100" : "z-10 pointer-events-none opacity-0"
+            }`}
           >
             {/* Reflective spot light effect */}
             <div 
@@ -216,7 +218,7 @@ export default function AuthScreen({ onBack, onLoginSuccess, initialRole, theme,
                       onChange={(e) => setEmail(e.target.value)}
                       placeholder="student@learnsphere.com"
                       className="block w-full pl-10 pr-4 py-3 bg-slate-50 dark:bg-slate-950/60 border border-slate-200 dark:border-slate-800 rounded-2xl text-slate-800 dark:text-white text-xs sm:text-sm focus:outline-none focus:border-primary-500 transition-all font-semibold focus:ring-2 focus:ring-primary-500/10"
-                      required
+                      required={isLogin}
                     />
                   </div>
                 </div>
@@ -233,7 +235,7 @@ export default function AuthScreen({ onBack, onLoginSuccess, initialRole, theme,
                       onChange={(e) => setPassword(e.target.value)}
                       placeholder="••••••••"
                       className="block w-full pl-10 pr-4 py-3 bg-slate-50 dark:bg-slate-950/60 border border-slate-200 dark:border-slate-800 rounded-2xl text-slate-800 dark:text-white text-xs sm:text-sm focus:outline-none focus:border-primary-500 transition-all font-semibold focus:ring-2 focus:ring-primary-500/10"
-                      required
+                      required={isLogin}
                     />
                   </div>
                 </div>
@@ -328,7 +330,9 @@ export default function AuthScreen({ onBack, onLoginSuccess, initialRole, theme,
               WebkitBackfaceVisibility: "hidden",
               transform: "rotateY(180deg)"
             }}
-            className="w-full h-full bg-white/90 dark:bg-slate-900/90 backdrop-blur-xl border border-slate-200/85 dark:border-slate-800 rounded-[32px] shadow-2xl p-6 sm:p-8 flex flex-col justify-between absolute top-0 left-0 right-0 preserve-3d"
+            className={`w-full h-full bg-white/90 dark:bg-slate-900/90 backdrop-blur-xl border border-slate-200/85 dark:border-slate-800 rounded-[32px] shadow-2xl p-6 sm:p-8 flex flex-col justify-between absolute top-0 left-0 right-0 preserve-3d transition-all duration-300 ${
+              !isLogin ? "z-20 pointer-events-auto opacity-100" : "z-10 pointer-events-none opacity-0"
+            }`}
           >
             {/* Reflective spot light effect on backside */}
             <div 
@@ -407,7 +411,7 @@ export default function AuthScreen({ onBack, onLoginSuccess, initialRole, theme,
                       onChange={(e) => setEmail(e.target.value)}
                       placeholder="student@learnsphere.com"
                       className="block w-full pl-9 pr-4 py-2.5 bg-slate-50 dark:bg-slate-950/60 border border-slate-200 dark:border-slate-800 rounded-2xl text-slate-800 dark:text-white text-xs sm:text-sm focus:outline-none focus:border-primary-500 transition-all font-semibold"
-                      required
+                      required={!isLogin}
                     />
                   </div>
                 </div>
@@ -425,7 +429,7 @@ export default function AuthScreen({ onBack, onLoginSuccess, initialRole, theme,
                       onChange={(e) => setPassword(e.target.value)}
                       placeholder="••••••••"
                       className="block w-full pl-9 pr-4 py-2.5 bg-slate-50 dark:bg-slate-950/60 border border-slate-200 dark:border-slate-800 rounded-2xl text-slate-800 dark:text-white text-xs sm:text-sm focus:outline-none focus:border-primary-500 transition-all font-semibold"
-                      required
+                      required={!isLogin}
                     />
                   </div>
                 </div>

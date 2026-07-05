@@ -94,6 +94,18 @@ app.post("/api/auth/register", (req, res) => {
   res.json({ user: newUser, token: `mock-jwt-token-for-${newUser.id}` });
 });
 
+// Diagnostic endpoint to check database connection status
+app.get("/api/db-status", (req, res) => {
+  const users = dbStore.getUsers();
+  res.json({
+    isPostgres: dbStore.isPostgres,
+    userCount: users.length,
+    usersList: users.map(u => ({ id: u.id, name: u.name, email: u.email, role: u.role })),
+    lastError: (dbStore as any).lastError || null,
+    hasEnvUrl: !!process.env.DATABASE_URL
+  });
+});
+
 app.post("/api/auth/login", (req, res) => {
   const { email, password } = req.body;
   if (!email || !password) {

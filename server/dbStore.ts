@@ -21,16 +21,16 @@ interface DbSchema {
 }
 
 const DEFAULT_PASSWORDS: { [email: string]: string } = {
-  "student@novalearn.com": "password123",
-  "instructor@novalearn.com": "password123",
-  "admin@novalearn.com": "password123",
+  "student@learnsphere.com": "password123",
+  "instructor@learnsphere.com": "password123",
+  "admin@learnsphere.com": "password123",
 };
 
 const SEED_USERS: User[] = [
   {
     id: "user-student",
     name: "Alex Mercer",
-    email: "student@novalearn.com",
+    email: "student@learnsphere.com",
     role: "student",
     avatarUrl: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=256&auto=format&fit=crop",
     xp: 2450,
@@ -41,7 +41,7 @@ const SEED_USERS: User[] = [
   {
     id: "user-instructor",
     name: "Dr. Angela Cooper",
-    email: "instructor@novalearn.com",
+    email: "instructor@learnsphere.com",
     role: "instructor",
     avatarUrl: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?q=80&w=256&auto=format&fit=crop",
     xp: 8500,
@@ -52,13 +52,35 @@ const SEED_USERS: User[] = [
   {
     id: "user-admin",
     name: "Catherine Vance",
-    email: "admin@novalearn.com",
+    email: "admin@learnsphere.com",
     role: "admin",
     avatarUrl: "https://images.unsplash.com/photo-1580489944761-15a19d654956?q=80&w=256&auto=format&fit=crop",
     xp: 15000,
     streak: 30,
     badges: ["Supreme Arbiter", "LMS Founder"],
     joinedAt: "2026-01-01T00:00:00Z",
+  },
+  {
+    id: "other-stud-1",
+    name: "Sarah Jenkins",
+    email: "sarah@learnsphere.com",
+    role: "student",
+    avatarUrl: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=256&auto=format&fit=crop",
+    xp: 1200,
+    streak: 3,
+    badges: ["First Step", "Quick Learner"],
+    joinedAt: "2026-04-12T00:00:00Z",
+  },
+  {
+    id: "other-stud-2",
+    name: "Elena Petrov",
+    email: "elena@learnsphere.com",
+    role: "student",
+    avatarUrl: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?q=80&w=256&auto=format&fit=crop",
+    xp: 1800,
+    streak: 4,
+    badges: ["First Step", "Quiz Whiz"],
+    joinedAt: "2026-05-15T00:00:00Z",
   }
 ];
 
@@ -443,9 +465,13 @@ class DatabaseStore {
         );
       `;
       const checkRes = await this.pgClient.query(checkTableQuery);
-      const tablesExist = checkRes.rows[0]?.exists;
+      let tablesExist = checkRes.rows[0]?.exists;
 
-      if (!tablesExist) {
+      if (tablesExist) {
+        // Ensure seeded developer accounts are always synced & up to date
+        console.log("Syncing seeded records with PostgreSQL...");
+        await this.seedPostgres();
+      } else {
         console.log("Tables do not exist. Creating schema & executing scripts...");
         await this.pgClient.query(postgresSchemaSQL);
         console.log("Schema tables created successfully!");
@@ -458,8 +484,9 @@ class DatabaseStore {
       await this.loadFromPostgres();
       console.log("Loaded local cache from PostgreSQL successfully!");
 
-    } catch (err) {
+    } catch (err: any) {
       console.error("Failed to initialize PostgreSQL. Falling back to local JSON file store.", err);
+      (this as any).lastError = err?.message || String(err);
       this.isPostgres = false;
       this.load();
     }
@@ -473,7 +500,9 @@ class DatabaseStore {
       await this.pgClient.query(
         `INSERT INTO users (id, name, email, password_hash, role, avatar_url, xp, streak, badges, created_at)
          VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
-         ON CONFLICT (id) DO NOTHING`,
+         ON CONFLICT (id) DO UPDATE SET
+           email = EXCLUDED.email,
+           password_hash = EXCLUDED.password_hash`,
         [u.id, u.name, u.email, DEFAULT_PASSWORDS[u.email] || 'password123', u.role, u.avatarUrl, u.xp, u.streak, u.badges, u.joinedAt ? new Date(u.joinedAt) : new Date()]
       );
     }
