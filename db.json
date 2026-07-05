@@ -1,0 +1,526 @@
+{
+  "users": [
+    {
+      "id": "user-student",
+      "name": "Alex Mercer",
+      "email": "student@learnsphere.com",
+      "role": "student",
+      "avatarUrl": "https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=256&auto=format&fit=crop",
+      "xp": 2950,
+      "streak": 8,
+      "badges": [
+        "First Step",
+        "Quick Learner",
+        "Quiz Whiz",
+        "AI Conversationalist",
+        "Consistent Scholar"
+      ],
+      "joinedAt": "2026-03-01T00:00:00Z"
+    },
+    {
+      "id": "user-instructor",
+      "name": "Dr. Angela Cooper",
+      "email": "instructor@learnsphere.com",
+      "role": "instructor",
+      "avatarUrl": "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?q=80&w=256&auto=format&fit=crop",
+      "xp": 8500,
+      "streak": 12,
+      "badges": [
+        "Top Educator",
+        "Author of the Month",
+        "Community Anchor"
+      ],
+      "joinedAt": "2026-01-15T00:00:00Z"
+    },
+    {
+      "id": "user-admin",
+      "name": "Catherine Vance",
+      "email": "admin@learnsphere.com",
+      "role": "admin",
+      "avatarUrl": "https://images.unsplash.com/photo-1580489944761-15a19d654956?q=80&w=256&auto=format&fit=crop",
+      "xp": 15000,
+      "streak": 30,
+      "badges": [
+        "Supreme Arbiter",
+        "LMS Founder"
+      ],
+      "joinedAt": "2026-01-01T00:00:00Z"
+    }
+  ],
+  "passwords": {
+    "student@novalearn.com": "password123",
+    "instructor@novalearn.com": "password123",
+    "admin@novalearn.com": "password123",
+    "student@learnsphere.com": "password123",
+    "instructor@learnsphere.com": "password123",
+    "admin@learnsphere.com": "password123"
+  },
+  "courses": [
+    {
+      "id": "course-react",
+      "title": "Full-Stack Web Development with React 19 & Express",
+      "description": "Learn state-of-the-art interactive development using React 19, custom Node server controllers, and beautiful CSS interfaces.",
+      "longDescription": "Deploy robust corporate-grade dashboards. This comprehensive specialization program scales from HTML/CSS fundamental layouts up to concurrent server routing, Vite middleware configuration, and secure JSON databases on Express and Node.js.",
+      "category": "Development",
+      "instructorId": "user-instructor",
+      "instructorName": "Dr. Angela Cooper",
+      "instructorTitle": "Principal Engineer & Educator",
+      "instructorAvatar": "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?q=80&w=256&auto=format&fit=crop",
+      "difficulty": "Intermediate",
+      "price": 99.99,
+      "rating": 4.8,
+      "reviews": [
+        {
+          "id": "r1",
+          "userId": "user-student",
+          "userName": "Alex Mercer",
+          "rating": 5,
+          "comment": "Outstanding structure! The Express server setups and state-driven routes are extremely clean and production-ready.",
+          "date": "2026-06-10"
+        },
+        {
+          "id": "r2",
+          "userId": "other-stud-1",
+          "userName": "Sarah Jenkins",
+          "rating": 4,
+          "comment": "Excellent pace. Very comprehensive review of React hooks and the new React 19 compiler features.",
+          "date": "2026-06-12"
+        }
+      ],
+      "isPublished": true,
+      "thumbnail": "https://images.unsplash.com/photo-1633356122544-f134324a6cee?q=80&w=800&auto=format&fit=crop",
+      "duration": "24h 45m",
+      "studentCount": 840,
+      "modules": [
+        {
+          "id": "m-react-1",
+          "title": "Module 1: React 19 Foundational State & Hooks",
+          "lessons": [
+            {
+              "id": "l-react-1-1",
+              "title": "Lesson 1.1: Unleashing State & Performance optimizations",
+              "type": "video",
+              "duration": "15:20",
+              "videoUrl": "https://www.w3schools.com/html/mov_bbb.mp4",
+              "content": "Welcome to React 19! In this initial lesson, we learn about foundational states, avoiding excessive re-renders, and the inner workings of the new React compiler (React Forget) which automates hook dependencies memoization."
+            },
+            {
+              "id": "l-react-1-2",
+              "title": "Lesson 1.2: Mastering Tailwind CSS v4 layout architectures",
+              "type": "pdf",
+              "duration": "10 min read",
+              "content": "### Tailwind CSS v4 Grid & Design Harmony\n\nTailwind v4 introduces a streamlined compiler. Avoid cluttering elements with dozens of arbitrary classes. Instead, combine structural layouts with standard classes:\n- Use `grid grid-cols-1 md:grid-cols-3 gap-6` for responsive bento dashboard panels.\n- Always set `rounded-2xl` (16px) or `rounded-3xl` (24px) to respect modern Stripe/Apple layout design rules.\n- Combine glassmorphism layers (`backdrop-filter`) with subtle ring outlines for stunning aesthetic metrics card visualizers."
+            },
+            {
+              "id": "l-react-1-3",
+              "title": "Lesson 1.3: Creating a Multi-view SPA state router",
+              "type": "assignment",
+              "duration": "45 min task",
+              "assignmentText": "Assignment task requirement:\nWrite a complete single-page responsive navigation header. The header must support three separate view state modes (Dashboard, Detail, and Creator) and dynamically switch content containers based on a single localized React state. Submit the exact React component code that implements this view routing using simple button handlers."
+            }
+          ]
+        },
+        {
+          "id": "m-react-2",
+          "title": "Module 2: Complete Assessments & Performance Quiz",
+          "lessons": [
+            {
+              "id": "l-react-2-1",
+              "title": "Quiz 2.1: React 19 & CSS Layout Assessment",
+              "type": "quiz",
+              "duration": "10 min timed",
+              "quizQuestions": [
+                {
+                  "id": "q-r-1",
+                  "text": "Which hook can be used in React 19 to safely consume promises or Context objects inline?",
+                  "options": [
+                    "use()",
+                    "useState()",
+                    "useEffectPromise()",
+                    "useReactContext()"
+                  ],
+                  "correctOptionIndex": 0,
+                  "explanation": "The new `use` hook in React 19 can be called conditionally or inline to consume Contexts or Promises dynamically."
+                },
+                {
+                  "id": "q-r-2",
+                  "text": "What is the recommended port for all dev servers to run internally in this containerized reverse-proxy setup?",
+                  "options": [
+                    "Port 5173",
+                    "Port 80",
+                    "Port 3000",
+                    "Port 8080"
+                  ],
+                  "correctOptionIndex": 2,
+                  "explanation": "Port 3000 is the ONLY externally accessible port through the nginx reverse-proxy layer in this sandboxed playground environment."
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "course-ux-design",
+      "title": "Creative Apple-Level UI/UX Design & Spatial Harmony",
+      "description": "Learn Stripe-inspired grid alignments, glassmorphic visual stacks, minimalist micro-animations, and balanced typography.",
+      "longDescription": "Learn to design world-class landing pages. This class covers typography rules (such as matching high-character headers written in Space Grotesk with snug body text in Inter), margins spacing, and scroll-triggered interactive highlights.",
+      "category": "Design",
+      "instructorId": "user-instructor",
+      "instructorName": "Dr. Angela Cooper",
+      "instructorTitle": "Principal Engineer & Educator",
+      "instructorAvatar": "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?q=80&w=256&auto=format&fit=crop",
+      "difficulty": "Beginner",
+      "price": 49.99,
+      "rating": 4.9,
+      "reviews": [],
+      "isPublished": true,
+      "thumbnail": "https://images.unsplash.com/photo-1507238691740-187a5b1d37b8?q=80&w=800&auto=format&fit=crop",
+      "duration": "10h 15m",
+      "studentCount": 325,
+      "modules": [
+        {
+          "id": "m-ux-1",
+          "title": "Module 1: Typography Balance & Spatial Layout",
+          "lessons": [
+            {
+              "id": "l-ux-1-1",
+              "title": "Lesson 1.1: Selecting expressive fonts",
+              "type": "video",
+              "duration": "12:50",
+              "videoUrl": "https://www.w3schools.com/html/mov_bbb.mp4",
+              "content": "Visual pacing comes from intentional couplings. In this lesson, we study pairing Space Grotesk display headings with Inter for high-density dashboard layouts, and JetBrains Mono for clean technical statistics."
+            },
+            {
+              "id": "l-ux-1-2",
+              "title": "Lesson 1.2: Interactive design guidelines",
+              "type": "pdf",
+              "duration": "8 min read",
+              "content": "### Designing Premium SaaS Layouts\n\nPremium layout aesthetics rely on absolute structural clarity:\n1. **Zero Gradients Clutter**: Avoid multi-color rainbow backgrounds. Stick to clean, rich greys (`bg-slate-50` / `bg-slate-900`) and use vibrant primary accents sparingly.\n2. **Architectural Honesty**: Ensure every button has a touch space target of at least 44px.\n3. **Generous Borders**: Keep card backgrounds transparently glassy with a subtle white ring outline (`border border-white/20`) to catch the light."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "course-gemini-ai",
+      "title": "Advanced AI Applications with Gemini 3.5 & Web Systems",
+      "description": "Learn to integrate Google's latest Gemini models for summarizing courses, chatbot reasoning, and dynamic student assessments.",
+      "longDescription": "Master generative artificial intelligence workflows. In this specialization, we build server-side proxies to run Gemini 3.5 Flash, parse JSON schemas directly from the model output, and build automated tutor assistants that resolve coding tasks and doubt resolution requests.",
+      "category": "Science",
+      "instructorId": "user-instructor",
+      "instructorName": "Dr. Angela Cooper",
+      "instructorTitle": "Principal Engineer & Educator",
+      "instructorAvatar": "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?q=80&w=256&auto=format&fit=crop",
+      "difficulty": "Advanced",
+      "price": 129.99,
+      "rating": 5,
+      "reviews": [
+        {
+          "id": "review-gemini",
+          "userId": "other-stud-2",
+          "userName": "Elena Petrov",
+          "rating": 5,
+          "comment": "Absolutely revolutionary. Serving the model through Express APIs and executing real-time summaries is the best way to leverage generative tech in educational settings.",
+          "date": "2026-06-15"
+        }
+      ],
+      "isPublished": true,
+      "thumbnail": "https://images.unsplash.com/photo-1620712943543-bcc4688e7485?q=80&w=800&auto=format&fit=crop",
+      "duration": "18h 30m",
+      "studentCount": 512,
+      "modules": [
+        {
+          "id": "m-gem-1",
+          "title": "Module 1: Server-Side Generative AI Architecture",
+          "lessons": [
+            {
+              "id": "l-gem-1-1",
+              "title": "Lesson 1.1: Creating secure Gemini API Controller",
+              "type": "video",
+              "duration": "22:15",
+              "videoUrl": "https://www.w3schools.com/html/mov_bbb.mp4",
+              "content": "Learn to construct robust server endpoints in Express using the official @google/genai module. We review how to safely inject process.env.GEMINI_API_KEY on the Node server and avoid exposing keys to client-side bundles."
+            },
+            {
+              "id": "l-gem-1-2",
+              "title": "Lesson 1.2: Designing Schema-locked structured JSON query formats",
+              "type": "pdf",
+              "duration": "15 min read",
+              "content": "### Generating JSON recipes safely from Gemini"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "course-finance-1",
+      "title": "Quantitative Portfolio Management & Algorithmic Trading",
+      "description": "Learn mathematical portfolio optimization, quantitative financial analytics, dynamic risk modeling, and trading algorithm architectures.",
+      "longDescription": "Master quantitative finance principles used by top asset managers and hedge funds. This professional program covers modern portfolio theory (MPT), Capital Asset Pricing Model (CAPM), Black-Litterman adjustments, portfolio rebalancing, and programmatic backtesting engines in python.",
+      "category": "Finance",
+      "instructorId": "user-instructor",
+      "instructorName": "Dr. Angela Cooper",
+      "instructorTitle": "Principal Engineer & Educator",
+      "instructorAvatar": "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?q=80&w=256&auto=format&fit=crop",
+      "difficulty": "Advanced",
+      "price": 149.99,
+      "rating": 4.9,
+      "reviews": [],
+      "isPublished": true,
+      "thumbnail": "https://images.unsplash.com/photo-1590283603385-17ffb3a7f29f?q=80&w=800&auto=format&fit=crop",
+      "duration": "16h 20m",
+      "studentCount": 145,
+      "modules": [
+        {
+          "id": "m-fin1-1",
+          "title": "Module 1: Portfolio Optimization & MPT",
+          "lessons": [
+            {
+              "id": "l-fin1-1-1",
+              "title": "Lesson 1.1: Mathematical Foundations of Risk and Return",
+              "type": "video",
+              "duration": "20:15",
+              "videoUrl": "https://www.w3schools.com/html/mov_bbb.mp4",
+              "content": "Understand variance, covariance, correlation matrices, and how statistical diversification lowers overall portfolio risk without sacrificing expected yields."
+            },
+            {
+              "id": "l-fin1-1-2",
+              "title": "Quiz 1.2: Portfolio Risk & CAPM Model Quiz",
+              "type": "quiz",
+              "duration": "10 min timed",
+              "quizQuestions": [
+                {
+                  "id": "q-f1-1",
+                  "text": "What does Beta represent in the Capital Asset Pricing Model (CAPM)?",
+                  "options": [
+                    "The asset's unique unsystematic risk",
+                    "The relative volatility of the asset compared to the broader market",
+                    "The historical standard deviation of asset returns",
+                    "The absolute guaranteed rate of interest payout"
+                  ],
+                  "correctOptionIndex": 1,
+                  "explanation": "Beta measures systematic risk, indicating how sensitive an asset's returns are relative to the overall market portfolio."
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "course-finance-2",
+      "title": "Decentralized Finance (DeFi) & Blockchain Ledger Economics",
+      "description": "Master decentralized liquidity pools, automated market makers (AMMs), smart contract lending protocols, and ledger audit pipelines.",
+      "longDescription": "Deep dive into the blockchain-based decentralized financial landscape. Understand gas fees optimization, yield farming yield-harvesting mechanisms, stablecoin peg mechanisms, flash loan structures, and complete vulnerability assessment tools for secure Web3 finance implementations.",
+      "category": "Finance",
+      "instructorId": "user-instructor",
+      "instructorName": "Marcus Aurelius",
+      "instructorTitle": "Director of Spatial Symbology",
+      "instructorAvatar": "https://images.unsplash.com/photo-1560250097-0b93528c311a?q=80&w=256&auto=format&fit=crop",
+      "difficulty": "Intermediate",
+      "price": 119.99,
+      "rating": 4.7,
+      "reviews": [],
+      "isPublished": true,
+      "thumbnail": "https://images.unsplash.com/photo-1621761191319-c6fb62004040?q=80&w=800&auto=format&fit=crop",
+      "duration": "14h 45m",
+      "studentCount": 210,
+      "modules": [
+        {
+          "id": "m-fin2-1",
+          "title": "Module 1: Decentralized Automated Exchange Mechanics",
+          "lessons": [
+            {
+              "id": "l-fin2-1-1",
+              "title": "Lesson 1.1: Constant Product AMM Equation (x * y = k)",
+              "type": "pdf",
+              "duration": "12 min read",
+              "content": "### Automated Market Makers & constant product formulas\n\nTraditional financial exchanges rely on central limit order books. Uniswap revolutionized decentralized exchanges by implementing the Constant Product Automated Market Maker algorithm:\n\n$$\\text{Equation: } x \\cdot y = k$$\n\nWhere:\n- $x$ represents the inventory of asset A in the pool\n- $y$ represents the inventory of asset B in the pool\n- $k$ is the invariant constant coefficient that must remain unchanged during standard swap operations.\n\nLearn how price slippage happens when transactions represent large ratios of total pool reserves, and how arbitrageurs keep asset prices aligned with broader global indexes."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "course-finance-3",
+      "title": "Corporate Finance, Venture Capital & Valuation Models",
+      "description": "Formulate discounted cash flow (DCF) spreadsheets, leveraged buyout (LBO) valuation analyses, and pitchbook models.",
+      "longDescription": "Master investment banking tools. This hands-on program guides you through building complex dynamic multi-scenario spreadsheets, cost of capital calculations (WACC), comparable company analysis, and pitchdeck creation for tech venture funding.",
+      "category": "Finance",
+      "instructorId": "user-instructor",
+      "instructorName": "Elena Petrov",
+      "instructorTitle": "Deep Math Lead Scholar",
+      "instructorAvatar": "https://images.unsplash.com/photo-1580489944761-15a19d654956?q=80&w=256&auto=format&fit=crop",
+      "difficulty": "Beginner",
+      "price": 89.99,
+      "rating": 4.8,
+      "reviews": [],
+      "isPublished": true,
+      "thumbnail": "https://images.unsplash.com/photo-1559526324-4b87b5e36e44?q=80&w=800&auto=format&fit=crop",
+      "duration": "11h 30m",
+      "studentCount": 380,
+      "modules": [
+        {
+          "id": "m-fin3-1",
+          "title": "Module 1: DCF Spreadsheet modeling foundations",
+          "lessons": [
+            {
+              "id": "l-fin3-1-1",
+              "title": "Lesson 1.1: Projecting Free Cash Flows",
+              "type": "video",
+              "duration": "18:40",
+              "videoUrl": "https://www.w3schools.com/html/mov_bbb.mp4",
+              "content": "Learn how to calculate EBIT, tax effects, capital expenditure additions (CapEx), and working capital shifts to determine Free Cash Flow to Firm (FCFF)."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "course-business-1",
+      "title": "SaaS Venture Growth Engineering & Funnel Optimization",
+      "description": "Formulate product-led growth pipelines, subscription metrics, cohort churn models, and stripe monetization integrations.",
+      "longDescription": "Master SaaS metrics and operations. Understand CAC (Customer Acquisition Cost), LTV (Lifetime Value) ratios, retention heatmaps, trial-to-paid optimizations, self-serve subscription systems, and multi-tenant billing logic.",
+      "category": "Business",
+      "instructorId": "user-instructor",
+      "instructorName": "Dr. Angela Cooper",
+      "instructorTitle": "Principal Engineer & Educator",
+      "instructorAvatar": "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?q=80&w=256&auto=format&fit=crop",
+      "difficulty": "Intermediate",
+      "price": 79.99,
+      "rating": 4.6,
+      "reviews": [],
+      "isPublished": true,
+      "thumbnail": "https://images.unsplash.com/photo-1460925895917-afdab827c52f?q=80&w=800&auto=format&fit=crop",
+      "duration": "9h 15m",
+      "studentCount": 195,
+      "modules": [
+        {
+          "id": "m-bus1-1",
+          "title": "Module 1: Core SaaS Metrics",
+          "lessons": [
+            {
+              "id": "l-bus1-1-1",
+              "title": "Lesson 1.1: Calculating Churn and LTV Programmatically",
+              "type": "pdf",
+              "duration": "12 min read",
+              "content": "### SaaS Valuation Math\n\nLearn to measure business health with simple calculations:\n- **User Churn Rate** = (Users Lost / Total Starting Users) during a time block.\n- **LTV** = ARPU (Average Revenue per User) / User Churn.\n- A healthy venture maintains a healthy ratio of **LTV > 3 * CAC**."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "course-business-2",
+      "title": "Product Management: Agile Sprints & Strategic Roadmaps",
+      "description": "Learn sprint execution, ticket writing, backlog grooming, PRD formatting, and stakeholder alignment methodologies.",
+      "longDescription": "Become a world-class PM. This course teaches how to manage engineer delivery schedules, run planning workshops, draft product requirements, define user test journeys, and manage stakeholder communication.",
+      "category": "Business",
+      "instructorId": "user-instructor",
+      "instructorName": "Marcus Aurelius",
+      "instructorTitle": "Director of Spatial Symbology",
+      "instructorAvatar": "https://images.unsplash.com/photo-1560250097-0b93528c311a?q=80&w=256&auto=format&fit=crop",
+      "difficulty": "Beginner",
+      "price": 59.99,
+      "rating": 4.8,
+      "reviews": [],
+      "isPublished": true,
+      "thumbnail": "https://images.unsplash.com/photo-1531403009284-440f080d1e12?q=80&w=800&auto=format&fit=crop",
+      "duration": "8h 45m",
+      "studentCount": 315,
+      "modules": [
+        {
+          "id": "m-bus2-1",
+          "title": "Module 1: Scrum Sprints Foundations",
+          "lessons": [
+            {
+              "id": "l-bus2-1-1",
+              "title": "Lesson 1.1: Writing Pristine User Stories",
+              "type": "video",
+              "duration": "14:10",
+              "videoUrl": "https://www.w3schools.com/html/mov_bbb.mp4",
+              "content": "Explore standard agile ticket templates: 'As a [user persona], I want [feature goal] so that [business value].'"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "course-rust-dev",
+      "title": "Advanced Rust Systems Programming & Safe Concurrency",
+      "description": "Explore safe systems design, high-performance concurrency pools, and compiler memory borrow checker constraints.",
+      "longDescription": "Master systems-level programming with Rust. This comprehensive course covers ownership concepts, borrowing guidelines, lifetime annotations, asynchronous runtimes like Tokio, and writing concurrent safe thread schedulers.",
+      "category": "Development",
+      "instructorId": "user-instructor",
+      "instructorName": "Dr. Angela Cooper",
+      "instructorTitle": "Principal Engineer & Educator",
+      "instructorAvatar": "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?q=80&w=256&auto=format&fit=crop",
+      "difficulty": "Advanced",
+      "price": 139.99,
+      "rating": 4.9,
+      "reviews": [],
+      "isPublished": true,
+      "thumbnail": "https://images.unsplash.com/photo-1607799279861-4dd421887fb3?q=80&w=800&auto=format&fit=crop",
+      "duration": "18h 50m",
+      "studentCount": 240,
+      "modules": [
+        {
+          "id": "m-rust-1",
+          "title": "Module 1: Memory Safety & Lifetimes",
+          "lessons": [
+            {
+              "id": "l-rust-1-1",
+              "title": "Lesson 1.1: Borrowing and Heap allocation allocations",
+              "type": "video",
+              "duration": "24:35",
+              "videoUrl": "https://www.w3schools.com/html/mov_bbb.mp4",
+              "content": "Deep dive into Rust stack vs heap data placement and how the borrow checker guarantees memory safety without garbage collectors."
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "enrollments": [
+    {
+      "id": "enr-react-alex",
+      "userId": "user-student",
+      "courseId": "course-react",
+      "enrolledAt": "2026-06-01T12:00:00Z",
+      "progress": 33,
+      "completedLessons": [
+        "l-react-1-1"
+      ],
+      "notes": {
+        "l-react-1-1": "React 19 compiles states automatically, saving us from writing tedious useMemo loops! This will completely revolutionize highly complex dashboard components."
+      },
+      "bookmarkedLessons": [
+        "l-react-1-2"
+      ],
+      "quizScores": {},
+      "submittedAssignments": {}
+    }
+  ],
+  "certificates": [],
+  "notifications": [
+    {
+      "id": "notif-welcome",
+      "userId": "user-student",
+      "title": "Welcome to LearnSphere, Alex!",
+      "message": "Embark on our Apple-level spatial design paths or full-stack software tracks. Click on your profile to view XP milestones.",
+      "type": "info",
+      "date": "2026-06-17T12:00:00Z",
+      "read": false
+    },
+    {
+      "id": "notif-streak",
+      "userId": "user-student",
+      "title": "6-Day Study Streak Active 🔥",
+      "message": "You are only 1 lesson away from claiming your 7-day badge under the global ranking list!",
+      "type": "achievement",
+      "date": "2026-06-17T14:30:00Z",
+      "read": false
+    }
+  ]
+}

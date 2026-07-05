@@ -1,0 +1,6 @@
+{
+  "name": "LearnSphere",
+  "description": "An AI-powered Learning Management System featuring role-based dashboards, course tracking, quizzes, certificates, and an AI study assistant.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
