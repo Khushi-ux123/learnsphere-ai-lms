@@ -170,7 +170,7 @@ export default function AuthScreen({ onBack, onLoginSuccess, initialRole, theme,
             transformStyle: "preserve-3d",
             transition: "transform 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275)",
           }}
-          className="w-full min-h-[590px] relative preserve-3d"
+          className="w-full min-h-[460px] relative preserve-3d"
         >
 
           {/* ==================== CARD SIDE A: LOGIN ==================== */}
@@ -258,57 +258,6 @@ export default function AuthScreen({ onBack, onLoginSuccess, initialRole, theme,
                   )}
                 </button>
               </form>
-
-              {/* Quick Launch Shortcut Dock */}
-              <div className="pt-5 border-t border-slate-150 dark:border-slate-800/80 text-left">
-                <div className="text-[9px] font-mono tracking-widest uppercase text-slate-400 mb-3.5 font-bold flex items-center gap-1.5">
-                  <Sparkles className="w-3.5 h-3.5 text-indigo-500 animate-pulse shrink-0" />
-                  <span>One-Click Developer sandbox:</span>
-                </div>
-                
-                <div className="space-y-2">
-                  {[
-                    { 
-                      email: "student@learnsphere.com", 
-                      name: "Alex Mercer", 
-                      role: "STUDENT", 
-                      icon: Laptop, 
-                      color: "from-blue-500/10 to-indigo-500/10 border-blue-200 dark:border-blue-900/40 text-blue-600 dark:text-blue-400" 
-                    },
-                    { 
-                      email: "instructor@learnsphere.com", 
-                      name: "Dr. Angela Cooper", 
-                      role: "INSTRUCTOR", 
-                      icon: Users, 
-                      color: "from-amber-500/10 to-orange-500/10 border-amber-200 dark:border-amber-900/40 text-amber-600 dark:text-amber-400" 
-                    }
-                  ].map((sc) => {
-                    const Icon = sc.icon;
-                    return (
-                      <button
-                        key={sc.email}
-                        type="button"
-                        onClick={() => handleShortcutLogin(sc.email)}
-                        className={`w-full p-2.5 rounded-xl bg-gradient-to-r ${sc.color} border hover:border-primary-500/50 transition-all text-xs flex items-center justify-between group cursor-pointer`}
-                      >
-                        <div className="flex items-center gap-2.5">
-                          <div className="w-7 h-7 rounded-lg bg-white dark:bg-slate-950 flex items-center justify-center shadow-sm border border-slate-200/50 dark:border-slate-800">
-                            <Icon className="w-3.5 h-3.5" />
-                          </div>
-                          <div className="text-left overflow-hidden">
-                            <div className="font-extrabold text-slate-850 dark:text-slate-150 leading-tight text-xs truncate max-w-[150px]">{sc.name}</div>
-                            <div className="text-[8px] font-mono font-bold opacity-75 mt-0.5 truncate">{sc.role} • {sc.email}</div>
-                          </div>
-                        </div>
-                        <div className="text-[9px] font-mono font-black text-primary-600 dark:text-primary-400 flex items-center gap-1 bg-white dark:bg-slate-950 px-2.5 py-1 rounded-lg border border-slate-200/50 dark:border-slate-800 shrink-0">
-                          <span>SYNC</span>
-                          <Check className="w-3 h-3 text-emerald-500 opacity-0 group-hover:opacity-100 transition-opacity" />
-                        </div>
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
             </div>
 
             <div className="mt-4 text-center">

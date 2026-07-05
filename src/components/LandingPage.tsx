@@ -31,7 +31,7 @@ export default function LandingPage({ onStartLearning, onLoginSuccess, courses, 
   // Enrollment & Simulated Payment Modal States
   const [selectedCourse, setSelectedCourse] = useState<Course | null>(null);
   const [modalStep, setModalStep] = useState<"preview" | "checkout" | "processing" | "success">("preview");
-  const [checkoutMode, setCheckoutMode] = useState<"sandbox" | "new">("sandbox");
+  const [checkoutMode, setCheckoutMode] = useState<"sandbox" | "new">("new");
   
   // Registration Form States for checkout on-the-fly
   const [regName, setRegName] = useState("");
@@ -233,34 +233,21 @@ export default function LandingPage({ onStartLearning, onLoginSuccess, courses, 
         let loggedInUser: User;
         let token: string;
 
-        if (checkoutMode === "sandbox") {
-          // Log in pre-seeded user Alex Mercer
-          const loginRes = await fetch("/api/auth/login", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ email: "student@learnsphere.com", password: "password123" }),
-          });
-          const loginData = await loginRes.json();
-          if (!loginRes.ok) throw new Error(loginData.error || "Login fail");
-          loggedInUser = loginData.user;
-          token = loginData.token;
-        } else {
-          // Register custom student profile on-the-fly
-          const regRes = await fetch("/api/auth/register", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              name: regName,
-              email: regEmail,
-              password: regPassword,
-              role: "student"
-            }),
-          });
-          const regData = await regRes.json();
-          if (!regRes.ok) throw new Error(regData.error || "Register fail");
-          loggedInUser = regData.user;
-          token = regData.token;
-        }
+        // Register custom student profile on-the-fly
+        const regRes = await fetch("/api/auth/register", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            name: regName,
+            email: regEmail,
+            password: regPassword,
+            role: "student"
+          }),
+        });
+        const regData = await regRes.json();
+        if (!regRes.ok) throw new Error(regData.error || "Register fail");
+        loggedInUser = regData.user;
+        token = regData.token;
 
         // Join selected course
         const joinRes = await fetch("/api/enrollments/join", {
@@ -425,46 +412,6 @@ export default function LandingPage({ onStartLearning, onLoginSuccess, courses, 
           <p className="text-base md:text-lg text-slate-600 dark:text-slate-300 mb-8 max-w-xl leading-relaxed">
             Designed for forward-thinking developers, visual creatives, and technical architects. Explore course paths with real file-persistent progress tracking, live interactive scoring assessments, and automated certificate generation.
           </p>
-
-          {/* Quick Sandbox Launcher Board */}
-          <div className="p-5 rounded-2xl glass-premium border border-slate-200 dark:border-slate-800 w-full max-w-xl mb-10">
-            <p className="text-xs font-mono tracking-widest uppercase text-slate-400 mb-3 flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping" />
-              Quick Access Sandbox Portals:
-            </p>
-            <div className="grid grid-cols-3 gap-3">
-              <button
-                onClick={() => onStartLearning("student")}
-                className="p-3 text-left rounded-xl bg-white dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 hover:border-primary-500 dark:hover:border-primary-400 hover:shadow-md transition-all group cursor-pointer"
-              >
-                <div className="text-xs sm:text-sm font-semibold flex items-center justify-between text-slate-800 dark:text-slate-100">
-                  Alex
-                  <ArrowRight className="w-3 h-3 text-slate-400 group-hover:translate-x-1 transition-transform" />
-                </div>
-                <div className="text-[9px] font-mono text-slate-400">Student Profile</div>
-              </button>
-              <button
-                onClick={() => onStartLearning("instructor")}
-                className="p-3 text-left rounded-xl bg-white dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 hover:border-primary-500 dark:hover:border-primary-400 hover:shadow-md transition-all group cursor-pointer"
-              >
-                <div className="text-xs sm:text-sm font-semibold flex items-center justify-between text-slate-800 dark:text-slate-100">
-                  Cooper
-                  <ArrowRight className="w-3 h-3 text-slate-400 group-hover:translate-x-1 transition-transform" />
-                </div>
-                <div className="text-[9px] font-mono text-slate-400">Instructor Profile</div>
-              </button>
-              <button
-                onClick={() => onStartLearning("admin")}
-                className="p-3 text-left rounded-xl bg-white dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 hover:border-primary-500 dark:hover:border-primary-400 hover:shadow-md transition-all group cursor-pointer"
-              >
-                <div className="text-xs sm:text-sm font-semibold flex items-center justify-between text-slate-800 dark:text-slate-100">
-                  Catherine
-                  <ArrowRight className="w-3 h-3 text-slate-400 group-hover:translate-x-1 transition-transform" />
-                </div>
-                <div className="text-[9px] font-mono text-slate-400">Admin Console</div>
-              </button>
-            </div>
-          </div>
 
           <div className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto">
             <a
@@ -966,68 +913,35 @@ export default function LandingPage({ onStartLearning, onLoginSuccess, courses, 
                       Complete Checkout Enrollment
                     </h4>
                     <p className="text-xs text-slate-400">
-                      Sync account identity credentials and initiate simulation checkout gateway.
+                      Create a new student profile and initiate the simulation checkout gateway.
                     </p>
                   </div>
 
-                  {/* Profile Mode Toggle */}
-                  <div className="space-y-2">
-                    <label className="block text-[10px] font-mono tracking-widest text-slate-400 uppercase font-bold">
-                      Select Student Profile Access:
-                    </label>
-                    <div className="grid grid-cols-2 gap-2">
-                      <button
-                        type="button"
-                        onClick={() => setCheckoutMode("sandbox")}
-                        className={`py-2.5 px-4 text-xs font-bold rounded-xl border transition-all cursor-pointer ${
-                          checkoutMode === "sandbox"
-                            ? "bg-slate-900 text-white dark:bg-white dark:text-slate-950 border-transparent shadow-sm"
-                            : "bg-slate-50 dark:bg-slate-950 border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-100"
-                        }`}
-                      >
-                        Alex Mercer (Sandbox Student)
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => setCheckoutMode("new")}
-                        className={`py-2.5 px-4 text-xs font-bold rounded-xl border transition-all cursor-pointer ${
-                          checkoutMode === "new"
-                            ? "bg-slate-900 text-white dark:bg-white dark:text-slate-950 border-transparent shadow-sm"
-                            : "bg-slate-50 dark:bg-slate-950 border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-100"
-                        }`}
-                      >
-                        Create Custom Student
-                      </button>
+                  {/* Custom Account Registration fields */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 p-4 rounded-2xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-850">
+                    <div className="space-y-1">
+                      <label className="text-[10px] font-bold text-slate-500 dark:text-slate-450 uppercase">Student Full Name</label>
+                      <input 
+                        type="text" 
+                        value={regName}
+                        onChange={(e) => setRegName(e.target.value)}
+                        placeholder="your name" 
+                        className="w-full px-3 py-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-xs"
+                        required
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-[10px] font-bold text-slate-500 dark:text-slate-450 uppercase">Email Address</label>
+                      <input 
+                        type="email" 
+                        value={regEmail}
+                        onChange={(e) => setRegEmail(e.target.value)}
+                        placeholder="email@example.com" 
+                        className="w-full px-3 py-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-xs"
+                        required
+                      />
                     </div>
                   </div>
-
-                  {/* Custom Account Registration fields */}
-                  {checkoutMode === "new" && (
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 p-4 rounded-2xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-850">
-                      <div className="space-y-1">
-                        <label className="text-[10px] font-bold text-slate-500 dark:text-slate-450 uppercase">Student Full Name</label>
-                        <input 
-                          type="text" 
-                          value={regName}
-                          onChange={(e) => setRegName(e.target.value)}
-                          placeholder="your name" 
-                          className="w-full px-3 py-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-xs"
-                          required
-                        />
-                      </div>
-                      <div className="space-y-1">
-                        <label className="text-[10px] font-bold text-slate-500 dark:text-slate-450 uppercase">Email Address</label>
-                        <input 
-                          type="email" 
-                          value={regEmail}
-                          onChange={(e) => setRegEmail(e.target.value)}
-                          placeholder="email@example.com" 
-                          className="w-full px-3 py-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-xs"
-                          required
-                        />
-                      </div>
-                    </div>
-                  )}
 
                   {/* Simulated Credit Card input Fields (Only if price > 0) */}
                   {selectedCourse.price > 0 && (
