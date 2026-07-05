@@ -391,9 +391,35 @@ class DatabaseStore {
       return;
     }
 
-    // Clean up square bracket formatting in passwords if present from copy-paste
-    if (dbUrl.includes(":[") && dbUrl.includes("]@")) {
-      dbUrl = dbUrl.replace(":[", ":").replace("]@", "@");
+    // Clean up square bracket formatting in passwords if present from copy-paste,
+    // and URL-encode the password in case it contains special characters like '@'
+    const bracketMatch = dbUrl.match(/:\[([^\]]+)\]@/);
+    if (bracketMatch) {
+      const rawPassword = bracketMatch[1];
+      const encodedPassword = encodeURIComponent(rawPassword);
+      dbUrl = dbUrl.replace(`:[${rawPassword}]@`, `:${encodedPassword}@`);
+    } else {
+      // Also check if there's an unencoded password containing '@' but no brackets.
+      // e.g., postgresql://postgres:Khushi@123sharma@db.rsqjzrqelyvosijbsnfk.supabase.co:5432/postgres
+      const firstDoubleSlash = dbUrl.indexOf("://");
+      if (firstDoubleSlash !== -1) {
+        const protocolPart = dbUrl.substring(0, firstDoubleSlash + 3);
+        const rest = dbUrl.substring(firstDoubleSlash + 3);
+        const lastAt = rest.lastIndexOf("@");
+        if (lastAt !== -1) {
+          const authPart = rest.substring(0, lastAt); // e.g. postgres:Khushi@123sharma
+          const hostPart = rest.substring(lastAt + 1); // e.g. db.rsqjzrqelyvosijbsnfk.supabase.co:5432/postgres
+          const colonIdx = authPart.indexOf(":");
+          if (colonIdx !== -1) {
+            const username = authPart.substring(0, colonIdx);
+            const password = authPart.substring(colonIdx + 1);
+            // If the password contains special characters and is not already URL-encoded
+            if (password.includes("@") && !password.includes("%")) {
+              dbUrl = `${protocolPart}${username}:${encodeURIComponent(password)}@${hostPart}`;
+            }
+          }
+        }
+      }
     }
 
     try {
